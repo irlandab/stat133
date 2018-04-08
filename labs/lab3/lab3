@@ -1,0 +1,93 @@
+# Title: "Lab 3: Command Line Basics"
+# Subtitle: "Stat 133, Spring 2018"
+# Author: "Gaston Sanchez"
+
+
+
+# create new directory stat133-hw4
+mkdir stat133-lab03
+
+# change to the directory stat133-hw4
+cd stat133-lab03
+
+# download bread.txt
+curl -O http://textfiles.com/food/bread.txt
+
+# use ls to list contents
+ls
+
+# download other text files
+curl -O http://textfiles.com/food/btaco.txt
+curl -O http://textfiles.com/food/1st_aid.txt
+curl -O http://textfiles.com/food/beesherb.txt
+
+# use curl to download csv files
+curl -O http://archive.ics.uci.edu/ml/machine-learning-databases/forest-fires/forestfires.csv
+curl -O http://www.math.uah.edu/stat/data/Fisher.csv
+curl -O http://web.pdx.edu/~gerbing/data/cars.csv
+
+# list contents in long form
+ls -l
+
+# list the contents in long format and by time?
+ls -lt
+
+# create directory data
+mkdir data
+
+# change to directory data
+cd data
+
+# create a directory txt-files
+mkdir txt-files
+
+# create a directory csv-files
+mkdir csv-files
+
+# move bread.txt to txt-files/
+mv ../bread.txt txt-files
+
+# use * to move all .txt files to txt-files
+mv ../*.txt txt-files
+
+# use * to move all .csv files to csv-files
+mv ../*.csv csv-files
+
+# go back to parent directory (stat133-lab03)
+cd ..
+
+# create a directory copies
+mkdir copies
+
+# copy bread.txt to copies
+cp data/txt-files/bread.txt copies
+
+# copy all .txt files to copies
+cp data/txt-files/*.txt copies
+
+# copy all .csv files to copies
+cp data/csv-files/*.csv copies
+
+# change to the directory copies
+cd copies
+
+# rename bread.txt as bread-recipe.txt
+mv bread.txt bread-recipe.txt
+
+# rename Fisher.csv as iris.csv
+mv Fisher.csv iris.csv
+
+# rename btaco.txt as breakfast-taco.txt
+mv btaco.txt breakfast-taco.txt
+
+# change to parent directory
+cd ..
+
+# rename direcotry copies as copy-files
+mv copies copy-files
+
+# delete copy-files
+rm -r copy-files
+
+# list contents in txt-files in reverse order
+ls -r data/txt-files

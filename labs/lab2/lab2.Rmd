@@ -3,6 +3,7 @@ title: "Lab 2"
 author: "Irlanda Ayon-Moreno"
 date: "3/9/2018"
 output: github_document
+fontsize: 11pt
 ---
 
 ```{r setup, include=FALSE}
