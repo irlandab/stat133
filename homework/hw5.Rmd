@@ -1,0 +1,278 @@
+---
+title: "Hw5"
+author: "Irlanda Ayon-Moreno"
+date: "4/27/2018"
+output: pdf_document
+fontsize: 11pt
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, error = TRUE)
+```
+
+```{r}
+check_sides <- function(x) {
+  if (length(x) != 6) {
+    stop("'sides' must be a vector of length 6")
+  }
+}
+
+check_prob <- function(x) {
+  if (sum(x) != 1) {
+    stop("elements in 'prob' must add up to 1")
+  }
+}
+```
+
+```{r}
+die <- function(sides = 1:6, prob = rep(1/6,6)) {
+  check_sides(sides)
+  check_prob(prob)
+  object <- list(sides=sides,prob=prob)
+  class(object) <- "die"
+  return(object)
+}
+```
+
+```{r}
+die()
+```
+
+```{r}
+print.die <- function(die) {
+  cat('object "die"\n\n')
+  print.data.frame(data.frame(sides = die$sides, prob = die$prob))
+  invisible(die)
+}
+```
+
+```{r}
+die()
+```
+
+```{r}
+fair_die <- die()
+fair_die
+```
+
+```{r}
+# die with non-standard sides
+weird_die <- die(sides = c('i', 'ii', 'iii', 'iv', 'v', 'vi'))
+weird_die
+```
+
+```{r}
+# create a loaded die
+loaded_die <- die(prob = c(0.075, 0.1, 0.125, 0.15, 0.20, 0.35))
+loaded_die
+```
+
+```{r}
+bad_die <- die(sides = c('a', 'b', 'c', 'd', 'e'))
+```
+
+```{r}
+# bad prob
+bad_die <- die(
+sides = c('a', 'b', 'c', 'd', 'e', 'f'),
+prob = c(0.2, 0.1, 0.1, 0.1, 0.5, 0.1))
+```
+
+```{r}
+check_times <- function(x) {
+  if (!is.double(x)) {
+    stop("times must be a number")
+  } else if ((x < 1) | (x %% 1 != 0)) {
+    stop("times must be an integer greater than 0")
+  }
+}
+```
+
+```{r}
+roll <- function(die, times = 1) {
+  check_times(times)
+  object <- list(rolls = sample(die$sides, prob = die$prob, size = times, replace = TRUE),
+                 sides = die$sides,
+                 prob = die$prob,
+                 total = times)
+  class(object) <- "roll"
+  return(object)
+}
+```
+
+```{r}
+print.roll <- function(roll, ...) {
+  cat('object "roll"\n\n')
+  print(roll$rolls)
+  invisible(roll)
+}
+```
+
+```{r}
+# roll fair die 50 times
+fair_die <- die()
+set.seed(123)
+fair50 <- roll(fair_die, times = 50)
+fair50
+```
+
+```{r}
+# what's in fair50?
+names(fair50)
+```
+
+```{r}
+fair50$rolls
+```
+
+```{r}
+fair50$sides
+```
+
+```{r}
+fair50$prob
+```
+
+```{r}
+fair50$total
+```
+
+```{r}
+# string die
+str_die <- die(
+  sides = c('a', 'b', 'c', 'd', 'e', 'f'),
+  prob = c(0.075, 0.1, 0.125, 0.15, 0.20, 0.35)
+)
+# roll 20 times
+set.seed(123)
+str_rolls <- roll(str_die, times = 20)
+names(str_rolls)
+```
+
+```{r}
+str_rolls
+```
+
+```{r}
+summary.roll <- function(roll, ...) {
+  rolls <- roll$rolls
+  side <- roll$sides
+  count <- rep(0, 6)
+  for (i in 1:6) {
+    count[i] <- sum(side[i] == rolls)
+  }
+  prop <- count/roll$total
+  frequencies <- data.frame(side, count, prop)
+  object <- list(freqs = frequencies)
+  class(object) <- "summary.roll"
+  return(object)
+}
+```
+
+```{r}
+print.summary.roll <- function(x, ...) {
+  cat('summary "roll"\n\n')
+  print(x$freqs)
+  invisible(x)
+}
+```
+
+```{r}
+fair50_sum <- summary(fair50)
+fair50_sum
+```
+
+```{r}
+class(fair50_sum)
+```
+
+```{r}
+names(fair50_sum)
+```
+
+```{r}
+fair50_sum$freqs
+```
+
+```{r}
+plot.roll <- function(roll, ...) {
+  sum_r_e <- summary(roll)
+  barplot(height = sum_r_e$freqs[["prop"]],
+          names.arg = sum_r_e$freqs[["side"]],
+          xlab = "side of die",
+          ylab = "relative frequencies",
+          main = (sprintf("Relative Frequencies in a series of %s coin tosses", roll$total))
+  )
+}
+```
+
+```{r}
+plot(fair50)
+```
+
+```{r}
+make_roll <- function(die, rolls) {
+  res <- list(
+    rolls  = rolls,
+    sides = die$sides,
+    prob = die$prob,
+    total = length(rolls))
+  class(res) <- "roll"
+  return(res)
+}
+```
+
+```{r}
+"[.roll" <- function(x, i) {
+  x$rolls[i]
+}
+```
+
+```{r}
+"[<-.roll" <- function(x, i, value) {
+  x$rolls[i] <- value
+  make_roll(x, x$rolls)
+}
+```
+
+```{r}
+"+.roll" <- function(x, incr) {
+  if (length(incr) != 1 | incr <= 0) {
+    stop("\ninvalid increament (must be positive)")
+  }
+  more_rolls <- roll(x, times = incr)
+  make_roll(x, c(x$rolls, more_rolls$rolls))
+}
+```
+
+```{r}
+# roll fair die
+set.seed(123)
+fair_die <- die()
+fair500 <- roll(fair_die, times = 500)
+# summary method
+summary(fair500)
+```
+
+```{r}
+fair500[500]
+```
+
+```{r}
+fair500[500] <- 1
+fair500[500]
+```
+
+```{r}
+summary(fair500)
+```
+
+```{r}
+fair600 <- fair500 + 100
+summary(fair600)
+```
+
+```{r}
+plot(fair500, 500)
+```
+
