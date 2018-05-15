@@ -30,24 +30,23 @@ sets require a pre-processing phase, and most of the time spent in any data
 analysis project will involve getting the data in the right shape. So it is 
 extremely important that you gain skills for cleaning raw data.
 
+```{r eval = FALSE}
+# install.packages("devtools")
+# install.packages("stringr")
+# install.packages("stringi")
+# install.packages('Rcpp')
+# remove.packages("ggplot2")
+# install.packages('ggplot2')
+library(devtools)
+library(stringr)
+library(stringi)
+library(Rcpp)
+library(ggplot2)
+```
 
 ### Packages `"stringr"`, `"plotly"`, and regex cheatsheet
 
 For this lab, you will be using the R packages `"stringr"` and `"plotly"`
-
-```{r eval = FALSE}
-# install.packages("devtools")
-# devtools::install_github("dkahle/ggmap")
-# devtools::install_github("hadley/ggplot2")
-#install.packages("stringr", type = "source")
-# install.packages("plotly")
-#install.packages("stringi", type = "source")
-#library(stringi)
-#library(dplyr)
-#library(stringr)
-#library(ggmap)
-library(plotly, dependencies = TRUE)
-```
 
 Also, while you work on this lab you may want to look at the cheat sheets for:
 
@@ -90,6 +89,9 @@ Once you've downloaded the data file, you can read it in R:
 
 ```{r eval = FALSE}
 dat <- read.csv('mobile-food-sf.csv', stringsAsFactors = FALSE)
+```
+
+```{r}
 head(dat)
 ```
 
@@ -121,8 +123,15 @@ in this column and visualize them with a bar-chart:
 
 ```{r day_barchart}
 day_freqs <- table(dat$DayOfWeekStr)
-
+day_freqs
 barplot(day_freqs, border = NA, las = 3)
+```
+
+```{r}
+# remove.packages("data.table")
+# install.packages("data.table")
+library(data.table)
+library(plotly)
 ```
 
 An alternative bar-chart can be obtained with `"plotly"`. You can use the
@@ -134,9 +143,7 @@ plot_ly(x = names(day_freqs),
         type = 'bar')
 ```
 
-![](lab10-images/plotly-barchart1.png)
-
-Interestingly, you can also use `plot_ly()` in a similar way to `ggplot()`. To use `plot_ly()` in this way, the data to be graphed must have the in data.frame (or tibble):
+Interestingly, you can also use `plot_ly()` in a similar way to `ggplot()`. To use `plot_ly()` in this way, the data to be graphed must be in a data frame (or tibble):
 
 ```{r}
 # day frequencies table
@@ -170,8 +177,6 @@ plot_ly(day_counts,
         y = ~count,
         type = 'bar')
 ```
-
-![](lab10-images/plotly-barchart2.png)
 
 -----
 
@@ -213,19 +218,19 @@ __Your turn__: What about times where the hour has just one digit? For example: 
 times <- c('12PM', '10AM', '9AM', '8AM', '2PM')
 
 # subset time
-
+str_sub(times, -4, -3)
 
 # subset period
-
-
-#
+str_sub(times, start = -2)
 ```
 
 One nice thing about `str_sub()` is that it allows you to specify negative values for the `start` and `end` positions. Run the command below and see what happens:
 
 ```{r eval = FALSE}
-# period
+str_sub(times, start = -1)
 str_sub(times, start = -2)
+str_sub(times, start = -3)
+str_sub(times, start = -4)
 ```
 
 
@@ -246,18 +251,74 @@ So far you've managed to get the hour value and the period (AM or PM). Now:
 
 - Using `times`, create a numeric vector `hours` containing just the number time (i.e. hour)
 
+```{r}
+hours <- as.numeric(str_replace(times, pattern = 'AM|PM', replacement = ''))
+```
+
 - Using `times`, create a character vector `periods` containing the period, e.g. `AM` or `PM`
+
+```{r}
+periods <- str_sub(times, start = -2)
+```
 
 - Use `plot_ly()` to make a barchart of the counts for `AM` and `PM` values.
 
+```{r}
+periods_t <- table(periods)
+periods_t
+
+plot_ly(x = names(periods_t),
+        y = periods_t,
+        type = "bar")
+```
+
 - Write R code to create a vector `start24` that contains the hour in 24hr scale.
+
+```{r}
+TRUE & TRUE
+FALSE & TRUE
+TRUE & FALSE
+```
+
+```{r}
+start24 <- hours
+which_pm <- periods == 'PM' & hours != 12 # a vec of T/F. 
+start24[which_pm] <- hours[which_pm] + 12
+```
 
 - Add two columns `start` and `end` to the data frame `dat`, containing
 the starting and ending hour respectively (columns must be `"numeric"`).
 
+```{r}
+start_hours <- as.numeric(str_replace(dat$starttime, pattern = 'AM|PM', replacement = ''))
+start_periods <- str_sub(dat$starttime, start = -2)
+```
+
+```{r}
+end_hours <- as.numeric(str_replace(dat$endtime, pattern = 'AM|PM', replacement = ''))
+end_periods <- str_sub(dat$endtime, start = -2)
+```
+
+```{r}
+# add column start
+which_start_pm <- start_periods == 'PM' & start_hours != 12
+sh <- start_hours
+sh[which_start_pm] <- start_hours[which_start_pm] + 12
+dat$start <- sh
+
+# add column end
+which_end_pm <- end_periods == 'PM' & end_hours != 12
+eh <- end_hours
+eh[which_end_pm] <- end_hours[which_end_pm] + 12
+dat$end <- eh
+```
+
 - With the starting and ending hours, calculate the duration, and add one
 more column `duration` to the data frame `dat`:
 
+```{r}
+dat$duration <- eh - sh
+```
 
 -----
 
@@ -275,7 +336,7 @@ corresponds to latitude, while the second value corresponds to longitude.
 
 First we need to remove the parenthesis. The issue here is that the characters
 `(` and `)` have special meanings; recall they are metacharacters. So you need 
-to __escape__ in R them by pre-appending two backslashes: `\\(` and `\\)`
+to __escape__ them in R by pre-appending two backslashes: `\\(` and `\\)`
 
 ```{r}
 # "remove" opening parenthesis 
@@ -335,12 +396,30 @@ locs <- c(
 
 - use `str_split()` to create a list `lat_lon` containing the latitude and the longitude values of `locs`
 
-Assuming that you have `lat_lon`, to retrieve the latitude and longitude values, you can use the `lapply()` 
-function, and then specify an _anonymous_ function to get the first element 
+```{r}
+# "removing" parentheses
+locs_temp <- str_replace_all(locs, pattern = '\\(|\\)', replacement = '')
+
+# list of latitude and longitude values
+lat_lon <- str_split(locs_temp, pattern = ',')
+
+
+# apply it to entire data
+locs_temp <- str_replace_all(dat$Location, pattern = '\\(|\\)', replacement = '')
+
+lat_lon <- str_split(locs_temp, pattern = ',')
+```
+
+```{r}
+head(lat_lon)
+```
+
+Assuming that you have `lat_lon`, to retrieve the latitude and longitude values, you can use the `lapply()` function, and then specify an _anonymous_ function to get the first element 
 (for the latitude): 
 
 ```{r}
 lat <- lapply(lat_lon, function(x) x[1])
+head(lat)
 ```
 
 ### Your Turn
@@ -350,6 +429,7 @@ function to extract longitude value (i.e. the second element):
 
 ```{r echo = FALSE}
 lon <- lapply(lat_lon, function(x) x[2])
+head(lon)
 ```
 
 To convert from list to a vector, use `unlist()`
@@ -362,23 +442,16 @@ lon <- as.numeric(unlist(lon))
 Add two more columns: `lat` and `lon` to the data frame `dat`
 
 
-```{r echo = FALSE}
-lat_lon <- str_split(
-  str_replace_all(dat$Location, pattern = '\\(|\\)', replacement = ''), 
-  pattern = ',')
-
-lat <- lapply(lat_lon, function(x) x[1])
-lon <- lapply(lat_lon, function(x) x[2])
-
-dat$lat <- as.numeric(unlist(lat))
-dat$lon <- as.numeric(unlist(lon))
+```{r}
+dat$lat <- lat
+dat$lon <- lon
 ```
 
 -----
 
 ## Plotting locations on a map
 
-Now that you have two vectors `latitude` and `longitude`, and the corresponding 
+Now that you have two vectors `lat` and `lon`, and the corresponding 
 columns `lat` and `lon` in the data frame `dat`, let's try to plot those 
 coordinates on a map.
 
@@ -395,10 +468,8 @@ A similar scatterplot can be obtained with `plot_ly()` which, as we've seen, can
 
 ```{r eval = FALSE}
 # default scatterplot
-plot_ly(x = lon, y = lay)
+plot_ly(x = lon, y = lat)
 ```
-
-![](lab10-images/plotly0.png)
 
 but it's recommended to specify arguments `type = 'scatter'` and `mode = 'markers'`:
 
@@ -414,8 +485,7 @@ Because `lon` and `lat` are also in the data frame `dat`, you could use
 plot_ly(data = dat, x = ~lon, y = ~lat, type = 'scatter', mode = 'markers')
 ```
 
-Notice the use of the tildes next to `x` and `y` arguments. This is what `plot_ly()` uses to __map__ the values of a column (in a data.frame) as the attributes of a 
-graphical element.
+Notice the use of the tildes next to `x` and `y` arguments. This is what `plot_ly()` uses to __map__ the values of a column (in a data.frame) as the attributes of a graphical element.
 
 
 -----
@@ -428,7 +498,7 @@ Although the previous calls show the dots with the right latitude and longitude 
 Instead of displaying a _naked_ `plot()`, we can use the package `"RgoogleMaps"` which is one the several packages available in R to plot maps.
 
 ```{r}
-# install.packages("RgoogleMaps")
+#install.packages("RgoogleMaps")
 library(RgoogleMaps)
 ```
 
@@ -446,18 +516,6 @@ zoom <- min(MaxZoom(range(dat$lat, na.rm = TRUE),
 map1 <- GetMap(center=center, zoom=zoom, destfile = "lab10-images/san-francisco.png")
 ```
 
-```{r eval = FALSE}
-# coordinates for center of the map
-center <- c(mean(dat$lat, na.rm = TRUE), mean(dat$lon, na.rm = TRUE))
-
-# zoom value
-zoom <- min(MaxZoom(range(dat$lat, na.rm = TRUE), 
-                    range(dat$lon, na.rm = TRUE)))
-
-# san francisco map
-map1 <- GetMap(center=center, zoom=zoom, destfile = "san-francisco.png")
-```
-
 The code above downloads a static map from the Google server and saves it in the specified destination file. To make a plot you have to use `PlotOnStaticMap()`
 
 ```{r san-francisco-map}
@@ -473,9 +531,9 @@ Another useful package for plotting maps is `"ggmap"`. As you may guess, `"ggmap
 
 As usual, you need to install the package:
 
-```r
+```{r}
 # remember to install ggmap
-install.packages("ggmap")
+#install.packages("ggmap")
 library(ggmap)
 ```
 
@@ -483,18 +541,9 @@ It is possible that you run into some issues with `"ggmap"` (and `"ggplot2"`). A
 packages. If you encounter some cryptic errors, you may switch to an older version of `"ggplot2"`
 
 ```r
-# skip this part (come back if you run into some error messages)
 # (go back to a previous version of ggplot)
 devtools::install_github("hadley/ggplot2@v2.2.0")
 devtools::install_github("dkahle/ggmap")
-```
-
-Here I'm assuming that the data frame `dat` already includes columns `lat` and `lon`:
-
-```r
-# add variables 'lat' and 'lon' to the data frame
-dat$lat <- latitude
-dat$lon <- longitude
 ```
 
 Because some rows have missing values in the geographical coordinates, we can get rid of them with `'na.omit()`:
@@ -545,34 +594,50 @@ What if you want to identify all locations that have burritos? This is where reg
 
 ```{r}
 foods <- dat$optionaltext[1:10]
+foods
 ```
 
 - Use `str_detect()` (or equivalently `grep()`) to match `"Burritos"` and `"burritos"`.
+
+```{r}
+str_detect(string = foods, pattern = "Burritos|burritos")
+```
+
 - If you use `grepl()`, you can use `ignore.case = TRUE` to match for both.
+
+```{r}
+grepl("burritos", foods, ignore.case = TRUE)
+```
+
 - Try another pattern: e.g. `"tacos"`, or `"quesadillas"`
+
+```{r}
+grepl("tacos|quesadillas", foods, ignore.case = TRUE)
+```
+
 - Now create a data frame `burritos` by subsetting (i.e. filtering) the data frame to get only those rows that match `"burritos"`
+
+```{r}
+burritos <- dat[grepl("burritos", dat$optionaltext, ignore.case = TRUE), ]
+```
+
 - Use the `lat` and `lon` corrdinates in `burritos` to display a map of locations with _burritos_ (see map below).
-- Experiment with other types of foods
-- Challenge: try use facetting to show a type of food per facet (e.g. one facet for burritos, another for quesadillas, another one for tacos, etc)
 
-```{r sf_map_burritos, echo = FALSE, warning = FALSE, eval = FALSE}
-burros <- grepl("burritos", dat$optionaltext, ignore.case = TRUE)
-burritos <- dat[burros, ]
-
+```{r sf_map_burritos}
 ggmap(sf_map) + 
   geom_point(data = burritos, 
              mapping = aes(x = lon, y = lat), 
              color = "blue", alpha = 0.2, size = 1)
 ```
 
+- Experiment with other types of foods
 
+```{r}
 
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+- Challenge: try use facetting to show a type of food per facet (e.g. one facet for burritos, another for quesadillas, another one for tacos, etc)
+
+```{r}
+
+```

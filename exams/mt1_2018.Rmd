@@ -1,0 +1,370 @@
+---
+title: "Mt1 2018"
+author: "Irlanda Ayon-Moreno"
+date: "5/4/2018"
+output: pdf_document
+fontsize: 11pt
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, error = TRUE)
+```
+
+```{r message=FALSE}
+library(dplyr)
+library(ggplot2)
+```
+
+Explained Errors
+================
+
+```{r}
+dat <- data.frame(
+  first = c("Jon", "Arya", "Tyrion", "Daenerys", "Yara"),
+  last = c("Snow", "Stark", "Lannister", "Targaryen", "Greyjoy"),
+  gender = c("male", "female", "male", "female", "female"),
+  title = c("lord", "princess", "master", "khaleesi", "princess"),
+  gpa = c(2.8, 3.5, 2.9, 3.7, NA),
+  stringsAsFactors = FALSE
+)
+dat
+```
+
+## value of 'first' for maximum 'gpa'
+
+```{r}
+max_gpa <- max(dat$gpa, na.rm = TRUE)
+max_gpa
+```
+
+```{r}
+which_max_gpa <- dat$gpa = max_gpa
+```
+
+```{r}
+# corrected
+which_max_gpa <- dat$gpa == max_gpa
+which_max_gpa
+```
+
+```{r}
+dat$first(which_max_gpa)
+```
+
+```{r}
+# corrected
+dat$first[which_max_gpa]
+```
+
+## gpa of title lord
+
+```{r}
+dat[ , c("title", "gpa")]
+```
+
+```{r}
+dat[ , "title"]
+```
+
+```{r}
+dat[ , c("title", "gpa")] == "lord"
+```
+
+```{r}
+dat[ , "title"] = "lord"
+dat
+```
+
+```{r}
+dat$gpa[dat[ , "title"] = "lord"]
+```
+
+```{r}
+# corrected
+dat$gpa[dat[ , "title"] == "lord"]
+```
+
+## median gpa of each gender
+
+```{r}
+which_males <- dat$gender == 'male'
+which_females <- dat$gender == 'female'
+```
+
+```{r}
+# with mistake
+median_females <- median(dat$gpa[which_males])
+median_males <- median(dat$gpa[which_males])
+c(median_females, median_males)
+```
+
+```{r}
+# corrected 
+median_females <- median(dat$gpa[which_females], na.rm = TRUE)
+median_males <- median(dat$gpa[which_males])
+c(median_females, median_males)
+```
+
+Command Outputs
+================
+
+```{r}
+student <- list(
+  name = "Anakin Skywalker",
+  gpa = 4,
+  major_minor = c(major1 = "jedi studies", major2 = "sith studies", minor = "galactic policies"),
+  grades = data.frame(
+    course = c("force-101", "podracing", "light-sabers"),
+    score = c(9.3, 10.0, 8.5),
+    stringsAsFactors = FALSE
+  )
+)
+student
+```
+
+```{r}
+length(student$major_minor)
+```
+
+```{r}
+student$gpa < 2.5
+```
+
+```{r}
+names(student$major_minor)
+```
+
+```{r}
+student$grades[2]
+```
+
+```{r}
+student$grades[[2]]
+```
+
+```{r}
+student$grades[[2]][2]
+```
+
+```{r}
+rep(student$grades[[2]][2], student$gpa)
+```
+
+```{r}
+student$grades %>% arrange(score)
+```
+
+Data Types
+===========
+
+```{r}
+uno <- c(TRUE, FALSE)
+uno
+typeof(uno)
+```
+
+```{r}
+dos <- uno + 1L
+dos
+typeof(dos)
+```
+
+```{r}
+tres <- c(uno, dos, "3.0", "4.0")
+tres
+typeof(tres)
+```
+
+```{r}
+cuatro <- as.factor(tres)
+cuatro
+typeof(cuatro)
+```
+
+```{r}
+uno[1]
+dos[uno[1]]
+cinco <- tres[dos[uno[1]]]
+cinco
+typeof(cinco)
+```
+
+Markdown
+=========
+
+## Examples
+
+Text in italics:
+
+*italics*
+
+Text in bold:
+
+**bold**
+
+Text that is associated to a (hyper)link:
+
+[link title](www.url.com)
+
+Text in code format:
+
+- code chunck: Make a code chunk with three back ticks followed
+by an r in braces. End the chunk with three back
+ticks
+```{r}
+four <- 4
+```
+
+- inline code: use back ticks around the code. include an r after the first back tick so that the code updates itself.  
+
+
+      `four` or `r four`  
+    
+How to write unordered bulleted list:
+
+Use - or + or * & end each line with 2 spaces
+
+How to write ordered bulleted list:
+
+Use numbers & end each line with 2 spaces
+
+Vector Subsetting
+=================
+
+```{r}
+lord <- c("v", "o", "l", "d", "e", "m", "o", "r", "t")
+```
+
+```{r}
+names(lord) = 1:9
+lord
+```
+
+```{r}
+lord[length(lord)]
+```
+
+```{r}
+as.logical(-1:-4)
+lord[as.logical(-1:-4)]
+```
+
+```{r}
+lord[seq(from = 1, to = 9, by = 2)]
+```
+
+```{r}
+lord[lord != "e" | lord == "o"]
+```
+
+```{r}
+lord[3:1]
+lord[3:1] == lord[3:1]
+```
+
+## Write code that returns the elements: "d" "o" "o" "r"
+
+```{r}
+lord[c(4, 2, 7, 8)]
+```
+
+Explain Commands
+=================
+
+## What does `sum(!is.finite(x))` say about `x`?
+
+```{r}
+x <- seq(from = 0, to = 12, by = 2)
+!is.finite(x)
+sum(!is.finite(x))
+
+x <- c(0, 1, 2, 3, 4, pi/0, 1/0) # a non-zero number divided by 0 creates infinity
+!is.finite(x)
+sum(!is.finite(x))
+
+# Tells the number of infinite values.
+# 0 if x is finite
+```
+
+## COnsider a numeric vector `x`. What type of subsetting operaations are involved in the command: `x[-which(x > 0)]`?
+
+```{r}
+# numeric subsetting
+
+x <- c(-4, -3, -2, -1, 0, 1, 2, 3, 4)
+x > 0
+which(x > 0)
+-which(x > 0)
+x[-which(x > 0)]
+```
+
+## A data frame `A` and a matrix `B` contain exactly the same tabular data. The first column of `A` and `B` is named `Col1`. Why does `B$Col1` return an error?
+
+```{r}
+B <- matrix(c(1,2,3, 11,12,13), nrow = 2, ncol = 3, byrow = TRUE,
+            dimnames = list(c("row1", "row2"),
+                            c("Col1", "Col2", "Col3"))
+)
+B
+
+A <- data.frame(B)
+A
+```
+
+```{r}
+# $ is used on data frames (lists)
+# [] may be uces on data frames (lists) & On Matrices
+#     [row idex, column index]
+
+A$Col1
+B$Col1
+A[ , 1]
+B[ , 1]
+```
+
+dplyr
+======
+
+```{r}
+autos <- data.frame(
+  Model = as.character(c("pontiac firebird", "pontiac safari", NA, "opel 1900", "peugeot 304", "volkswagen model 111", NA, "datsun p1510")),
+  MPG = as.double(c(19.0, NA, 30.0, NA, 30.0, 27.0, 35.0, NA)),
+  Cylinders = as.integer(c(6, 8, rep(4, 6))),
+  Weight = as.integer(c(NA, 5140, 2065, 2123, 2074, 1834, 1613, 2130)),
+  Accelerate = as.double(c(15.0, 12.0, 14.5, NA, 19.5, NA, 18.0, 14.5)),
+  Origin = as.character(c(rep("American", 2), rep("European", 4), rep("Japanese", 2)))
+)
+autos
+```
+
+## Display the `Model` and `Weight` of all `European` cars with `MPG` larger than 25. The output should be ordered from largest to smallest (in weight).
+
+```{r}
+autos %>%
+  filter(Origin == "European" & MPG > 25) %>%
+  select(c(Model, Weight)) %>%
+  arrange(desc(Weight))
+```
+
+ggplot2
+========
+
+## Create a scatterplot of `mpg` and `hp`, with the size of the dots depending on `cyl`, and faceting by `transmission`.
+
+```{r}
+dataset <- data.frame(
+  row.names = c("Mazda RX4", "Mazda RX4 Wag", "Dotsun 710", "Hornest 4 Drive", "Hornest Sportabout"),
+  mpg = c(21, 21, 22.8, 21.4, 18.7),
+  cyl = c(6, 6, 4, 6, 8),
+  hp = c(110, 110, 93, 110, 175),
+  transmission = c(rep("automatic", 3), rep("manual", 2))
+)
+dataset
+```
+
+```{r}
+ggplot(data = dataset, mapping = aes(x = mpg, y = hp)) +
+  geom_point(aes(size = cyl)) +
+  facet_grid(.~transmission)
+```
+

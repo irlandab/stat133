@@ -1,0 +1,230 @@
+---
+title: "Mt1 2017"
+author: "Irlanda Ayon-Moreno"
+date: "5/4/2018"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, error = TRUE)
+```
+
+```{r message=FALSE}
+library(dplyr)
+library(ggplot2)
+```
+
+
+Command Outputs
+===============
+
+```{r}
+x <- 1:5
+y <- letters[1:5]
+names(y) <- 1:5
+```
+
+## What is the output of `y[x <= 2]`?
+
+```{r}
+y[x <= 2]
+```
+
+## What is the output of `y[x[5]]`?
+
+```{r}
+y[x[5]]
+```
+
+## What is the output of `y[!(x < 3)]`?
+
+```{r}
+y[!(x < 3)]
+```
+
+## What is the output of `y[x/x]`?
+
+```{r}
+y[x/x]
+```
+
+## What is the output of `y[x[-2][3]]`?
+
+```{r}
+y[x[-2][3]]
+```
+
+## What is the output of `x[(y != "c") & (y != "a")]`?
+
+```{r}
+x[(y != "c") & (y != "a")]
+```
+
+## What is the output of `x[(y == "c") | (y == "a")]`?
+
+```{r}
+x[(y == "c") | (y == "a")]
+```
+
+## Do these commands return the numeric vector given by: 1 2 3 4 5?
+
+* `c(1 2 3 4 5)`  
+* `1:5`  
+* `list(1, 2, 3, 4, 5)`  
+* `seq(from = 1, to = 5, by = 1)`  
+* `[1, 2, 3, 4, 5]`  
+* `c("1", "2", "3", "4", "5")`
+* `1 + c(0, 1, 2, 3, 4)`  
+* `sqrt(1, 4, 9, 16, 25)`
+
+```{r}
+c(1 2 3 4 5) # no
+1:5 # yes
+list(1, 2, 3, 4, 5) # no
+seq(from = 1, to = 5, by = 1) # yes
+[1, 2, 3, 4, 5] # no
+c("1", "2", "3", "4", "5") # no
+1 + c(0, 1, 2, 3, 4) # yes
+sqrt(1, 4, 9, 16, 25) # no
+```
+
+Data Types
+===========
+
+```{r}
+x <- c(1.1, 2.2, 3.3, 4.4)
+x
+typeof(x)
+```
+
+```{r}
+y <- (x == 1.1)
+y
+typeof(y)
+```
+
+```{r}
+z <- y + 0
+z
+typeof(z)
+```
+
+```{r}
+w <- c(x, "5.5")
+w
+typeof(w)
+```
+
+```{r}
+xyz1 <- c(x, y, z, w[1])
+xyz1
+typeof(xyz1)
+```
+
+Files
+======
+
+## True or False?
+
+**"\t"**, **";"**, **" "**, and **","** are charcters commonly used as field-delimiters
+
+A file format is a way of interpreting the bytes in a file
+
+The CSV format name stands for Common Standard Value
+
+A CSV format is a special case of a spreadsheet format
+
+In a CSV file, there must be a single header line containing the names of the fields
+
+Binary formats tend to provide smaller files and faster access speeds
+
+One disadvantage of plain text files is their lack of standard structure
+
+Data stored in a binary format can be accessed using a text editor
+
+
+ggplot2
+========
+
+```{r, echo = FALSE}
+sw <- data.frame(
+  name = c("Anakin", "Padme", "Luke", "Leia"),
+  gender = c(rep(c("male", "female"), 2)),
+  height = c(1.88, 1.65, 1.72, 1.5),
+  weight = c(84, 45, 77, 49)
+)
+```
+
+```{r}
+sw
+```
+
+## Create a scatter plot of `height` and `weight`. Distinguish the points using a person's `gender` and labeling each point with their `name`. Finally, add a title.
+
+```{r}
+ggplot(data = sw, mapping = aes(x = height, y = weight)) +
+  geom_point(aes(shape = gender)) +
+  geom_text(aes(label = name), vjust = "inward") +
+  ggtitle("Scatter Diagram of Height and Weight")
+```
+
+## Create a scatterplot of `mpg` and `hp`, with the size of the dots depending on `cyl`, the shape of the dots depending on `transmission`, and the color of the dots depending on `transmission`. Facet by `transmissionm` and include a title.
+
+```{r, echo = FALSE}
+coches <- data.frame(
+  row.names = c("Mazda RX4", "Mazda RX4 Wag", "Dotsun 710", "Hornest 4 Drive", "Hornest Sportabout"),
+  mpg = c(21, 21, 22.8, 21.4, 18.7),
+  cyl = c(6, 6, 4, 6, 8),
+  hp = c(110, 110, 93, 110, 175),
+  transmission = c(rep("automatic", 3), rep("manual", 2))
+)
+```
+
+```{r}
+coches
+```
+
+```{r}
+ggplot(data = coches, mapping = aes(x = mpg, y = hp)) +
+  geom_point(aes(size = cyl, shape = transmission, color = transmission)) +
+  facet_grid(.~transmission) +
+  ggtitle("MPG and HP by Transmission")
+```
+
+dplyr
+======
+
+```{r}
+sw
+```
+
+## Which of the following commands returns the number of females and males?
+
+* `sw %>% select(gender) %>% count()`  
+* `sw %>% count(gender)`  
+* `sw %>% group_by(gender) %>% count()`  
+* `sw %>% group_by(gender) %>% summarise()`
+
+
+```{r}
+sw %>% select(gender) %>% count() # no
+sw %>% count(gender) # yes
+sw %>% group_by(gender) %>% count() # yes
+sw %>% group_by(gender) %>% summarise() # no
+```
+
+## Which of the following commands returns the data (rows) of male individuals?
+
+* `sw %>% select(gender == "male")`  
+* `sw %>% filter(gender == "male")`  
+* `sw %>% group_by(gender == "male")`  
+* `sw %>% filter(by == "male")`
+
+
+```{r}
+sw %>% select(gender == "male") # no
+sw %>% filter(gender == "male") # yes
+sw %>% group_by(gender == "male") # no
+sw %>% filter(by == "male") # no
+```
+
